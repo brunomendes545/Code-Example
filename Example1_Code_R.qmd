@@ -33,26 +33,21 @@ library(ggplot2)
 library(ggpubr)
 library(readxl)
 library(ggthemes)
-library(stevemisc)
 library(grid)
 library(gridExtra)
 library(stargazer)
 library(knitr)
 library(kableExtra)
 library(patchwork)
-library(plm)
-library(lmtest)
-library(sandwich)
 library(zoo)
 library(lubridate)
 library(tibble)
 library(psych)
-library(corrplot)
 library(ggcorrplot)
 library(scales)
-library(tseries)
-library(urca)
-library(AER)
+
+
+
 
 ## Pallet --------
 
