@@ -1,0 +1,395 @@
+---
+title: "Example1 Output"
+author: "Bruno Mendes"
+format: pdf
+---
+
+:::callout-tip
+# README 1   
+
+This is a simple example of a QMD file with basic management, compiling and data visualization, for evidence of programming skills.
+
+Here I will just show a relatively simple examples using R and some LaTeX.
+
+If the reader wants to replicate the code, please contact me for data access.
+
+:::
+
+```{r, results = F,  warning=FALSE, message=FALSE, echo = F}
+## Global options --------
+knitr::opts_chunk$set(echo = F,
+                      message = FALSE,
+                      warning = FALSE,
+                      fig.align='center')
+
+# Start from scratch - clean your environment
+rm(list = ls())
+
+## load packages --------
+
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(ggpubr)
+library(readxl)
+library(ggthemes)
+library(stevemisc)
+library(grid)
+library(gridExtra)
+library(stargazer)
+library(knitr)
+library(kableExtra)
+library(patchwork)
+library(plm)
+library(lmtest)
+library(sandwich)
+library(zoo)
+library(lubridate)
+library(tibble)
+library(psych)
+library(corrplot)
+library(ggcorrplot)
+library(scales)
+library(tseries)
+library(urca)
+library(AER)
+
+## Pallet --------
+
+## Here is the pallet and ggplot2 theme I use for my plots
+
+#library(scales)
+pal <- c("#708090",
+         "#b34745",
+         "#de8f44",
+         "#A0C7BE", 
+         "#00a1d5",
+         "#3D8A7F",
+         "#696598",
+         "#DBC2CF",
+         "black"
+         )
+#show_col(pal)
+
+
+my_theme <-
+  theme_minimal() +
+  #scale_y_continuous(labels = label_percent()) +
+  #scale_fill_manual(values = pal) +
+  theme(
+    axis.line.x.bottom = element_line(colour = "black"),
+    axis.line.x.top = element_blank(),
+    axis.line.y = element_blank(),
+    text = element_text(size = 11), # the default for all
+    axis.text = element_text(size = 9),
+    axis.title = element_text(size = 11), # I don't use title embeded
+    legend.key = element_rect(fill = "white"),
+    panel.grid = element_blank(),
+    panel.background = element_rect(fill = "white",
+                                    colour = "white",
+                                    linewidth = 0.5,
+                                    linetype = "solid"),
+    panel.grid.major.y = element_line(color = "gray80",
+                                      linewidth = 0.3),
+    axis.ticks = element_blank(),
+    legend.position="right",
+    plot.margin = margin(0.5, 1, 0, 1, "cm"))
+
+## Load data --------  
+load("./data/combined_data.RData")
+```
+
+
+
+## Vizualizations
+
+```{r}
+#| warning: false
+#| fig-cap: "Crises by year"
+#| tbl-cap-location: top
+#| label: fig-crises_year
+  
+################################################################################
+###                   Crises by Year                                          ##
+###                                                                           ##
+################################################################################
+
+
+combined_data %>%
+  select(country, year, debt_crises, currency_crises, banking_crises) %>%
+  filter(year >= 1980 & year <= 2022) %>%
+  replace_na(list(debt_crises = 0, currency_crises = 0, banking_crises = 0)) %>%
+  pivot_longer(cols = c(debt_crises, currency_crises, banking_crises), 
+               names_to = "crisis_type", 
+               values_to = "crisis_count") %>%
+  group_by(year, crisis_type) %>%
+  summarise(total_crises = sum(crisis_count)) %>%
+  ggplot(aes(x = year, y = total_crises, fill = crisis_type)) +
+  geom_bar(stat = "identity", color = "white") +  # Stack the crises types
+  scale_fill_manual(values = c("debt_crises" = "#b34745", 
+                               "currency_crises" = "#de8f44", 
+                               "banking_crises" = "#A0C7BE"), 
+                    labels = c("Debt Crises", "Currency Crises", "Banking Crises")) +
+  labs(x = "Year", y = "Number of Crises", title = "" , fill = "") +
+  theme_minimal() +
+  theme(
+    axis.line.x.bottom = element_line(colour = "black"),
+    axis.line.x.top = element_blank(),
+    axis.line.y = element_blank(),
+    text = element_text(size = 11),  # Default for all
+    axis.text = element_text(size = 9),
+    axis.title = element_text(size = 11), 
+    panel.grid = element_blank(),
+    panel.background = element_rect(fill = "white",
+                                    colour = "white",
+                                    linewidth = 0.5,
+                                    linetype = "solid"),
+    panel.grid.major.y = element_line(color = "gray80",
+                                      linewidth = 0.3),
+    axis.ticks = element_blank(),
+    legend.position = "bottom",
+    plot.margin = margin(0.5, 1, 0, 1, "cm"))
+
+
+```
+
+```{r}
+#| warning: false
+#| fig-cap: "First and last CBI scores by country"
+#| tbl-cap-location: top
+#| label: fig-45
+################################################################################
+###                                     45 degree line plot                   ##
+###                                                                           ##
+################################################################################
+
+
+#GRAPH 1B#
+#Create a dataset with 3 variable country, first cbie and last cbie in 3 columns
+# Your code here
+cbie_first_last <- combined_data %>%
+  select(country,year, cbie_index) %>%
+  filter(!is.na(cbie_index))%>%
+  group_by(country) %>%
+  filter(year == min(year) | year == max(year)) %>%
+  mutate(first = first(cbie_index),
+         last = last(cbie_index)) %>%
+  # Create a dummy variable equal to 1 if the last observation is greater than or equal to the first, and 0 otherwise
+  mutate(greater_equal = ifelse(last(cbie_index) == first(cbie_index), 2, ifelse(last(cbie_index) >= first(cbie_index), 1, 0)))|>
+  mutate(last_year = max(year),
+         last_cbie_index = ifelse(year == last_year, cbie_index, NA))
+
+#Now create a graph with the first and last cbie index with 45 degree line
+# Your ggplot code here
+plot_45<-cbie_first_last %>%
+  ggplot(aes(x = first, y = last, color = factor(greater_equal))) +
+  my_theme +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "#708090") +
+  scale_x_continuous(limits = c(0, 1)) +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(x = "First CBI Index", y = "Last CBI Index",title = "" , color = NULL) +
+  my_theme +
+  theme(legend.position = "none")+
+  scale_color_manual(values = c("#b34745", "#00a1d5","#FFD700"), labels = c("Last obs ≤ First obs", "Last obs > First obs","Last obs = First obs")) +
+  labs(x = "First CBIE", y = "Last CBIE", color = NULL) +  # Remove color legend
+  theme(legend.position = "none")
+
+plot_45
+```
+
+In @fig-45 its clear that the last CBI index is greater than the first CBI index for most countries. This is consistent with the idea that the CBI index has increased over time. The dashed line represents the 45 degree line, where the first and last CBI index are equal. The color of the points indicates whether the last CBI index is greater than the first CBI index. The red points represent countries where the last CBI index is less than or equal to the first CBI index. The blue points represent countries where the last CBI index is greater than the first CBI index. The yellow points represent countries where the last CBI index is equal to the first CBI index. It is also worth noting that there are several countries where the CBI score decreased from its begining to its end. This is indicative that we have a mix of countries with increasing and decreasing CBI scores over time.
+
+
+```{r}
+#| warning: false
+#| fig-cap: "Different measures of CBI"
+#| tbl-cap-location: top
+#| label: fig-CBI
+  
+################################################################################
+###                     Plot over time of the diff indices                    ##
+###                                                                           ##
+################################################################################
+
+
+CBI_OVER_TIME <- combined_data |>
+  group_by(year) |>
+  summarise(cbie_index_mean_all = mean(cbie_index, na.rm = TRUE),
+            cbie_gmt_mean = mean(cbie_gmt, na.rm = TRUE),
+            cbie_cwn_lvaw_mean = mean(cbie_cwn_lvaw, na.rm = TRUE),
+            lvaw_garriga_mean = mean(lvaw_garriga, na.rm = TRUE)) |> #Lets do a plot with this three over time
+  ggplot() +
+  geom_line(aes(x = year, y = cbie_index_mean_all, color = "CBIE"), size = 1) +
+  geom_line(aes(x = year, y = cbie_gmt_mean, color = "GMT"), size = 1) +
+  geom_line(aes(x = year, y = cbie_cwn_lvaw_mean, color = "CWN (W)"), size = 1) +
+  geom_line(aes(x = year, y = lvaw_garriga_mean, color = "Garriga (W)"), size = 1) +
+  scale_color_manual(values = c("CBIE" = "#b34745", 
+                                "GMT" = "#de8f44", 
+                                "CWN (W)" = "#A0C7BE",
+                                "Garriga (W)" = "#3D8A7F"))+ 
+  labs(x = "Year", y = "CBI(mean)", title = "" , color = "") +
+  theme_minimal() +
+  theme(
+    axis.line.x.bottom = element_line(colour = "black"),
+    axis.line.x.top = element_blank(),
+    axis.line.y = element_blank(),
+    text = element_text(size = 11), # the default for all
+    axis.text = element_text(size = 9),
+    axis.title = element_text(size = 11), # I don't use title embedded
+    panel.grid = element_blank(),
+    panel.background = element_rect(fill = "white",
+                                    colour = "white",
+                                    linewidth = 0.5,
+                                    linetype = "solid"),
+    panel.grid.major.y = element_line(color = "gray80",
+                                      linewidth = 0.3),
+    axis.ticks = element_blank(),
+    legend.position="bottom",
+    plot.margin = margin(0.5, 1, 0, 1, "cm"))
+
+CBI_OVER_TIME
+```
+
+In @fig-CBI we can see the evolution of the CBI index over time. The plot shows the mean CBI index for all countries, grouped by different measures of the index. This are the most relevant and publicly available measures of the CBI index. The plot shows that the CBI index has increased over time for all measures with a similar trend, despite differences in the fluctuations and levels.
+
+```{r}
+#| warning: false
+#|fig-cap: "CBI index in 2023"
+#| tbl-cap-location: top
+#| label: fig-CBIworld
+
+
+################################################################################
+###WORLD MAP PLOT FOR THE INDEX FOR THE YEARS 1980 AND 2023                  ##
+###                                                                           ##
+################################################################################
+
+#I wnat to do a world map with the CBIE for year 2000
+#First i need to have the country shapes or cordinates of something
+#I will use the map_data function from ggplot2
+world_map <- map_data("world")
+combined2023 <- combined_data %>%
+  filter(year == 2023)
+
+
+
+#First i will create the new names for the countries that are splited(all trhis in the combined adatset for both years)
+combined2023 <- combined2023 %>%
+  mutate(country = case_when(
+    country == "Antigua and Barbuda" ~ "Antigua",
+    country == "Guinea Bissau" ~ "Guinea-Bissau",
+    country == "Macao S.A.R" ~ "Macao",
+    country == "Macedonia" ~ "North Macedonia",
+    country == "Saint Kitts and Nevis" ~ "Saint Kitts",
+    country == "Saint Vincent and the Grenadines" ~ "Saint Vincent",
+    country == "The Bahamas" ~ "Bahamas",
+    country == "Trinidad and Tobago" ~ "Trinidad",
+    country == "United Kingdom" ~ "UK",
+    country == "United Republic of Tanzania" ~ "Tanzania",
+    country == "United States of America" ~ "USA",
+    TRUE ~ country
+  ))
+
+# Create a duplicated dataset with modified country names
+duplicated_countries <- combined2023 %>%
+  filter(country %in% c("Antigua", "Saint Kitts", "Saint Vincent", "Trinidad")) %>%
+  mutate(country = case_when(
+    country == "Antigua" ~ "Barbuda",
+    country == "Saint Kitts" ~ "Nevis",
+    country == "Saint Vincent" ~ "Grenadines",
+    country == "Trinidad" ~ "Tobago",
+    TRUE ~ country
+  ))
+
+# Combine the original dataset with the duplicated dataset
+combined2023 <- bind_rows(combined2023, duplicated_countries)
+
+
+
+
+
+
+#Now i will merge the world_map with the combined_data for both periods
+
+world_map2023 <- left_join(world_map, combined2023, by = c("region" = "country"))
+
+#Check in 2023
+
+
+
+#Now i will plot the map
+w2023<-world_map2023%>%
+  filter(!is.na(cbie_index)) %>%
+  ggplot(aes(x = long, y = lat, group = group, fill = cbie_index)) +
+  geom_polygon(size = 0.2, color = "#F3F3F3") +
+  scale_fill_fermenter(palette = "Blues",
+                       direction=1,
+                       name = " ",
+                       limits = c(0,1),
+                       breaks = c(0,0.20,0.40,0.60,0.80,1),
+                       labels = c("0","0.20","0.40","0.60","0.80","1")) +
+    labs(
+    title = "",
+    caption = "")+
+  theme_void() +
+  theme(
+    legend.position = c(0.96, 0.60),
+
+    plot.title = element_text(hjust = 0.5),
+    plot.caption = element_text(size = 9))
+
+# Display the plot
+w2023
+
+```
+
+
+
+## Statistics and Regression examples
+
+
+## Appendix
+
+For transparency, I present the sources of the variables used in the dataset.
+
+```{r Variable}
+
+
+Variable <- tribble(~"Source", ~"Variables",
+  "Romelli (2024)", "Central bank independece index extended",
+  "Garriga (2024)", "Central bank independece index",
+  "Nguyen (2022)", "Financial crises",
+  
+)
+
+```
+
+```{r}
+
+Variable |>
+  arrange(Variable) |>
+  knitr::kable("latex",
+               col.names = c("Source","Variable"),
+               booktabs = TRUE,
+               caption = "Sources and variables used in the dataset. \\label{tbl:Variable}",
+               escape = FALSE,
+               longtable = TRUE
+               ) |>
+  kable_styling(latex_options = c("striped",
+                                  "repeat_header", 
+                                  "HOLD_position"),
+                font_size = 10) |>
+  row_spec(0, bold = TRUE) |>
+  column_spec(1, width = "3cm") |>
+  column_spec(2, width = "12cm")
+
+
+```
+
+```{=latex}
+\vspace*{-0.7\baselineskip}
+{\scriptsize \noindent \textit{Note:} This table presents the source of the variables used on the construction of the dataset used in this work. 
+\par}
+```
+

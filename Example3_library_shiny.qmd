@@ -1,0 +1,29 @@
+---
+title: "Example3 Output"
+author: "Bruno Mendes"
+format: pdf
+---
+
+:::callout-tip
+# README 3
+Here I will leave two links. One is for the repository of a package that I'm creating and the other is for a shiny app that I have created.
+:::
+
+# The IM-MP-PC model
+
+I have identified that there is no package dedicated to the simple IM-MP-PC model. Following this I'm developing a package for it.
+
+The repository for the package is [HERE](https://github.com/brunomendes545/policymodel). There you can find the code and the documentation for the package.
+
+The name of the library is `policymodel` and it is available on my GitHub.
+
+This is something that i recently started and I will be updating it as I go. Its in a very initial fase.
+This model is a simple model that incorporates IS(Investment-Saving), MP(Monetary Policy) and PC(Phillips Curve) equations with shocks.
+
+# Shiny App
+
+I have created a shiny app that simulates this IM-MP-PC model. The app is available [HERE](https://jvh841-bruno-mendes.shinyapps.io/model/)
+
+The app is very simple and it is a work in progress. I will be updating it as I go. If the app is not working, its because I'm doing some updates on it.
+
+Since the app is hosted in a public server, it may take a while to load.
