@@ -22,7 +22,7 @@ This model is a simple model that incorporates IS(Investment-Saving), MP(Monetar
 
 # Shiny App
 
-I have created a shiny app that simulates this IM-MP-PC model. The app is available [HERE](https://jvh841-bruno-mendes.shinyapps.io/model/)
+I have created a shiny app that simulates this IS-MP-PC model. The app is available [HERE](https://jvh841-bruno-mendes.shinyapps.io/model/)
 
 The app is very simple and it is a work in progress. I will be updating it as I go. If the app is not working, its because I'm doing some updates on it.
 
