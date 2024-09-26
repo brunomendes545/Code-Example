@@ -41,7 +41,7 @@ Besides this we try something weith more and less conservative states.
 *********************************
 *B: Getting the Data        	*
 *********************************
-capture cd "C:\Users\Bruno Mendes\OneDrive - ucp.pt\CLSBE\trim_4\Microeconometrics\Project\Data\DataAppendix"
+capture cd "\Project\Data\DataAppendix"
 
 *
 pause off
