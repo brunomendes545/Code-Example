@@ -219,7 +219,7 @@ pause
 drop lower* upper* effect*
 
 *Export the graph. Change the export directory to get it.
-capture graph export "C:\Users\Bruno Mendes\OneDrive - ucp.pt\CLSBE\trim_4\Microeconometrics\Project\Graph.jpg", as(jpg) name("Graph") quality(100)
+capture graph export "\Project\Graph.jpg", as(jpg) name("Graph") quality(100)
 
 ****************************************
 *E1: Addition number 1 : Oaxaca-Blinder*
